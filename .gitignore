@@ -1,0 +1,14 @@
+cmake-build-debug/
+external/AarchGate/build-release/
+external/AarchGate/dist/
+*.o
+*.so
+*.dylib
+*.a
+build/
+dist/
+.DS_Store
+.idea/
+*.swp
+*.swo
+*~
