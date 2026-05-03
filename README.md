@@ -56,8 +56,14 @@ The most reliable way to build is using the provided Dockerfile which locks the 
 docker build -t pg_aarchgate -f .docker/pg_build.Dockerfile .
 ```
 
-### Running Tests
-Run the automated acceleration benchmark:
+### Running Benchmarks (via Docker)
+The easiest way to verify the 150M+ rec/sec throughput is using the automated benchmark suite inside Docker:
+
 ```bash
-./scripts/test_pg_acceleration.sh
+# 1. Build the production image
+docker build -t pg_aarchgate -f .docker/pg_build.Dockerfile .
+
+# 2. Run the benchmark suite (starts PG, generates 10M rows, runs tests)
+docker run --rm pg_aarchgate /bin/bash -c "service postgresql start && sleep 5 && ./scripts/test_pg_acceleration.sh"
 ```
+
