@@ -16,12 +16,20 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     clang-15 \
-    cmake \
     ninja-build \
     git \
     pkg-config \
     postgresql-server-dev-16 \
     postgresql-16 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install CMake 3.28 from Kitware repository (needed for AarchGate's asmjit dependency)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    apt-transport-https \
+    ca-certificates \
+    && curl -fsSL https://apt.kitware.com/ubuntu/releases/NeededKeyID.pub | gpg --dearmor - | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null \
+    && echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ jammy main' | tee /etc/apt/sources.list.d/kitware.list >/dev/null \
+    && apt-get update && apt-get install -y --no-install-recommends cmake \
     && rm -rf /var/lib/apt/lists/*
 
 # Set up clang as default
