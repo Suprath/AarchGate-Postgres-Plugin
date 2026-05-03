@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-bookworm
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+  builder:
+    build:
+      context: .
+      dockerfile: .docker/pg_build.Dockerfile
+    volumes:
+      - .:/plugin
+      - build_cache:/plugin/external/AarchGate/build-release
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGUSER: postgres
+    entrypoint: |
+      sh -c "
+      cd /plugin &&
+      make &&
+      make install &&
+      echo 'Extension built and installed' &&
+      psql -h postgres -U postgres -c 'CREATE EXTENSION IF NOT EXISTS aarchgate;' &&
+      psql -h postgres -U postgres -c 'SELECT aarchgate_filter(\'simple\', \'\\x0102030405060708\'::bytea);'
+      "
+
+volumes:
+  postgres_data:
+  build_cache:
