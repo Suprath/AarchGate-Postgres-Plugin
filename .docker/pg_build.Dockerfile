@@ -1,5 +1,13 @@
 FROM ubuntu:22.04
 
+# Add PostgreSQL official repository
+RUN apt-get update && apt-get install -y \
+    curl \
+    gnupg \
+    && curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
+    && echo "deb http://apt.postgresql.org/pub/repos/apt jammy-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install build tools and dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
