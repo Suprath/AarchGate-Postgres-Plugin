@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**AarchGate-Postgres-Plugin** is a PostgreSQL 16 extension that bridges PostgreSQL to the AarchGate JIT vectorized filter engine via a C/C++ glue layer.
+**AarchGate-Postgres-Plugin** is a PostgreSQL 14 extension that bridges PostgreSQL to the AarchGate JIT vectorized filter engine via a C/C++ glue layer.
 
 The extension exposes a single SQL function:
 ```sql
@@ -74,7 +74,7 @@ The `src/aarchgate_pg.cpp` implements a **kernel dispatcher** that:
 
 3. **Zero-copy bytea access**: Uses PostgreSQL's `PG_DETOAST_DATUM_PACKED` macro to point AarchGate directly at Postgres's internal buffer memory (no copy).
 
-4. **Schema mapping**: Hardcoded as a single 64-bit unsigned integer field at offset 0, stride 8 bytes. Data count is `byte_len / 8`.
+4. **Dynamic Batching**: The dispatcher automatically calculates record count from data length (`count = byte_len / 8`). To maximize SIMD utilization, use 8KB blocks (1024 records per call).
 
 ## Development Workflow
 
@@ -93,7 +93,7 @@ The `src/aarchgate_pg.cpp` implements a **kernel dispatcher** that:
 - **Function info**: `PG_FUNCTION_INFO_V1(aarchgate_filter)` declares stable C function signature
 - **SQL registration**: `sql/aarchgate--1.0.sql` defines the SQL wrapper; PGXS automates deployment
 - **Extension metadata**: `aarchgate.control` declares version, module path, and relocatability
-- **Postgres version**: Targets PostgreSQL 16; adjust `postgresql-server-dev-16` in Dockerfile for other versions
+- **Postgres version**: Targets PostgreSQL 14 (Ubuntu PGDG); toolchain locked to Clang-15 for ARM64 performance.
 
 ## Submodule Management
 

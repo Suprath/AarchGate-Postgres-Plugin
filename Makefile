@@ -1,29 +1,31 @@
-AARCHGATE_BUILD = external/AarchGate/build-release
-AARCHGATE_DIST  = external/AarchGate/dist
+# AarchGate-Postgres-Plugin Makefile
 
-MODULE_big = aarchgate
-OBJS       = src/aarchgate_pg.o
+EXTENSION = aarchgate
+MODULE_big = aarchgate_pg
+OBJS = src/aarchgate_pg.o
 
-PG_CPPFLAGS = -I$(AARCHGATE_DIST)/include -std=c++20
-SHLIB_LINK  = -L$(AARCHGATE_DIST)/lib -laarchgate -Wl,-rpath,$(AARCHGATE_DIST)/lib
+# Submodule paths
+AARCHGATE_HOME = $(CURDIR)/external/AarchGate
+AARCHGATE_BUILD = $(AARCHGATE_HOME)/build-release
+AARCHGATE_API = $(AARCHGATE_BUILD)
+
+# Compilation flags
+PG_CPPFLAGS = -I$(AARCHGATE_HOME)/include -std=c++20 -fPIC
+
+# Linking flags
+# Ensure we use the build root for the library and rpath
+SHLIB_LINK = -L$(AARCHGATE_API) -laarchgate \
+             -Wl,-rpath,'$(AARCHGATE_API)'
+
 
 DATA = sql/aarchgate--1.0.sql
 
-# Ensure AarchGate is built before compiling the extension
-$(OBJS): build-aarchgate
-
-.PHONY: build-aarchgate
-build-aarchgate:
-	cmake -B $(AARCHGATE_BUILD) -S external/AarchGate -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(AARCHGATE_DIST)
-	cmake --build $(AARCHGATE_BUILD)
-	cmake --install $(AARCHGATE_BUILD)
-
-# Include PGXS at the end
+# PGXS Integration
 PG_CONFIG = pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
 
-# Override the C++ compilation rule
+# Custom rule for C++ compilation to ensure clang-15 and C++20
 src/aarchgate_pg.o: src/aarchgate_pg.cpp
 	clang++-15 -std=c++20 -fPIC $(CPPFLAGS) $(PG_CPPFLAGS) \
 		-I$(shell $(PG_CONFIG) --includedir-server) \
@@ -31,4 +33,5 @@ src/aarchgate_pg.o: src/aarchgate_pg.cpp
 
 .PHONY: clean-all
 clean-all: clean
-	rm -rf $(AARCHGATE_BUILD) $(AARCHGATE_DIST)
+	# Note: We preserve the AARCHGATE_BUILD to avoid redundant co-processor recompilation
+

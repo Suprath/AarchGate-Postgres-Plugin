@@ -1,6 +1,6 @@
 CREATE OR REPLACE FUNCTION aarchgate_filter(strategy text, data bytea)
-RETURNS bigint
-AS '$libdir/aarchgate', 'aarchgate_filter'
+RETURNS int8
+AS 'MODULE_PATHNAME', 'aarchgate_filter'
 LANGUAGE C STRICT;
 
 COMMENT ON FUNCTION aarchgate_filter(text, bytea) IS

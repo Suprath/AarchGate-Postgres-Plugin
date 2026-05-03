@@ -9,6 +9,9 @@ build/
 dist/
 .DS_Store
 .idea/
+.claude.md
+.gemini/
 *.swp
 *.swo
 *~
+*.bc
