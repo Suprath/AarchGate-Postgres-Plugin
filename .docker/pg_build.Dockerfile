@@ -1,5 +1,9 @@
 FROM ubuntu:22.04
 
+# Set non-interactive mode to avoid timezone prompts
+ENV DEBIAN_FRONTEND=noninteractive \
+    TZ=UTC
+
 # Add PostgreSQL official repository
 RUN apt-get update && apt-get install -y \
     curl \
@@ -9,7 +13,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install build tools and dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     clang-15 \
     cmake \
