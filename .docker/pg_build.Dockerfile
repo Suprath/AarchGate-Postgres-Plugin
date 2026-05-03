@@ -23,14 +23,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-16 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install CMake 3.28 from Kitware repository (needed for AarchGate's asmjit dependency)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    apt-transport-https \
-    ca-certificates \
-    && curl -fsSL https://apt.kitware.com/ubuntu/releases/NeededKeyID.pub | gpg --dearmor - | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null \
-    && echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ jammy main' | tee /etc/apt/sources.list.d/kitware.list >/dev/null \
-    && apt-get update && apt-get install -y --no-install-recommends cmake \
-    && rm -rf /var/lib/apt/lists/*
+# Download and install CMake 3.28 (required for AarchGate's asmjit)
+RUN curl -fsSL https://github.com/Kitware/CMake/releases/download/v3.28.3/cmake-3.28.3-linux-aarch64.tar.gz -o /tmp/cmake.tar.gz && \
+    tar -xzf /tmp/cmake.tar.gz -C /usr/local --strip-components=1 && \
+    rm /tmp/cmake.tar.gz && \
+    cmake --version
 
 # Set up clang as default
 RUN update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-15 100 && \
